@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Unwanted files
+SefCloud.Backend/SefCloud.Backend.http
+SefCloud.Backend/appsettings.Development.json
+SefCloud.Backend/appsettings.json
+SefCloud.Backend/Storage/*
