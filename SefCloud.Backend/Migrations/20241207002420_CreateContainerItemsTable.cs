@@ -14,7 +14,7 @@ namespace SefCloud.Backend.Migrations
                 name: "ContainerItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false).Annotation("SqlServer:Indentity", "1, 1"),
+                    Id = table.Column<int>(nullable: false).Annotation("SqlServer:Identity", "1, 1"),
                     ContainerId = table.Column<int>(nullable: false),
                     FileName = table.Column<string>(nullable: false),
                     FileSize = table.Column<long>(nullable: false),

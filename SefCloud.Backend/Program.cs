@@ -29,6 +29,7 @@ builder.Services.AddAuthentication("Bearer")
     });
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<EncryptionService>();
+builder.Services.AddScoped<AuthService>();
 // Add CORS configuration
 builder.Services.AddCors(options =>
 {

@@ -12,8 +12,8 @@ namespace SefCloud.Backend.Services
             using (Aes aes = Aes.Create())
             {
                 aes.Key = keyBytes;
-                aes.GenerateIV();
-                byte[] iv = aes.IV;
+                byte[] iv = new byte[16];
+                aes.IV = iv;
 
                 using (ICryptoTransform encryptor = aes.CreateEncryptor())
                 {
@@ -26,7 +26,7 @@ namespace SefCloud.Backend.Services
 
                     string base64Result = Convert.ToBase64String(result);
 
-                    string safeBase64Result = base64Result.Replace('+', '-').Replace('/', '_').Replace('=', '.');
+                    string safeBase64Result = base64Result.Replace('+', '-').Replace('/', '_').Replace('=', ',');
 
                     return safeBase64Result;
                 }
@@ -36,7 +36,7 @@ namespace SefCloud.Backend.Services
 
         public string Decrypt(string safeBase64EncryptedValue, string key)
         {
-            string base64EncryptedValue = safeBase64EncryptedValue.Replace('-', '+').Replace('_', '/').Replace('.', '=');
+            string base64EncryptedValue = safeBase64EncryptedValue.Replace('-', '+').Replace('_', '/').Replace(',', '=');
             byte[] combinedBytes = Convert.FromBase64String(base64EncryptedValue);
             byte[] keyBytes = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
 

@@ -13,6 +13,7 @@ namespace SefCloud.Backend.Data
         // Define your DbSets for the tables here
         public DbSet<ApplicationUser> AspNetUsers { get; set; }
         public DbSet<StorageContainer> StorageContainers { get; set; }
+        public DbSet<StorageContainerItem> StorageContainerItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +23,12 @@ namespace SefCloud.Backend.Data
             modelBuilder.Entity<StorageContainer>(entity =>
             {
                 entity.ToTable("Containers");
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
+            });
+
+            modelBuilder.Entity<StorageContainerItem>(entity => {
+                entity.ToTable("ContainerItems");
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
             });
