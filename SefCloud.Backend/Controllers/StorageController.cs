@@ -21,7 +21,10 @@ namespace SefCloud.Backend.Controllers
         private readonly AuthService _authService;
 
 
-        public StorageController(TokenService tokenService, ApplicationDbContext context, EncryptionService encryptionService, AuthService authService)
+        public StorageController(TokenService tokenService, 
+                                ApplicationDbContext context, 
+                                EncryptionService encryptionService, 
+                                AuthService authService)
         {
             _tokenService = tokenService;
             _context = context;

@@ -70,6 +70,7 @@ namespace SefCloud.Backend.Services
             }
         }
 
+
         public string DecryptFileName(string encryptedFileName, string encryptionKey)
         {
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(encryptedFileName);
