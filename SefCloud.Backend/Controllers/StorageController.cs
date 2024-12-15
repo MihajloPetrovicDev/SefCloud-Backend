@@ -277,5 +277,71 @@ namespace SefCloud.Backend.Controllers
 
             return Ok(new { success = true, file = fileBytes, fileName = _encryptionService.DecryptFileName(storageContainerItem.FileName, storageContainer.EncryptionKey) });
         }
+
+
+        [HttpPost("delete-file")]
+        public async Task<IActionResult> DeleteStorageContainerItem(DeleteStorageContainerItemRequest deleteStorageContainerItemRequest)
+        {
+            var authHeaderCheck = _authService.ValidateAuthorizationHeader(deleteStorageContainerItemRequest.Authorization);
+
+            if (authHeaderCheck.IsValid == false)
+            {
+                return Unauthorized(new { success = false });
+            }
+
+            ApplicationUser user = authHeaderCheck.user;
+
+            var storageContainerItemToDelete = await _context.StorageContainerItems
+                .Where(containerItem => containerItem.Id == deleteStorageContainerItemRequest.StorageContainerItemId)
+                .FirstOrDefaultAsync();
+
+            var storageContainerItem = new
+            {
+                FileName = storageContainerItemToDelete.FileName,
+                ContainerId = storageContainerItemToDelete.ContainerId,
+            };
+
+            if (storageContainerItem == null)
+            {
+                return BadRequest(new { success = false });
+            }
+
+            var storageContainer = await _context.StorageContainers
+                .Where(container => container.Id == storageContainerItem.ContainerId)
+                .Select(container => new
+                {
+                    Id = container.Id,
+                    UserId = container.UserId,
+                    EncryptionKey = container.EncryptionKey,
+                    Name = container.Name,
+                })
+                .FirstOrDefaultAsync();
+
+            if (storageContainer == null)
+            {
+                return BadRequest(new { success = false });
+            }
+
+            if (storageContainer.UserId != user.Id)
+            {
+                return Unauthorized(new { success = false });
+            }
+
+            var folderName = storageContainer.Id + storageContainer.Name.Replace(" ", "") + storageContainer.UserId;
+            var encryptedFolderName = _encryptionService.Encrypt(folderName, storageContainer.EncryptionKey);
+            var filePath = Path.Combine("Storage", encryptedFolderName, storageContainerItem.FileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return BadRequest(new { success = false, message = "File doesn't exist." });
+            }
+
+            System.IO.File.Delete(filePath);
+
+            _context.StorageContainerItems.Remove(storageContainerItemToDelete);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
     }
 }
