@@ -7,6 +7,7 @@ using SefCloud.Backend.Services;
 using SefCloud.Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using System.ComponentModel;
 
 namespace SefCloud.Backend.Controllers
 {
@@ -36,7 +37,7 @@ namespace SefCloud.Backend.Controllers
 
             if (authHeaderCheck.IsValid == false)
             {
-                return BadRequest(new { success = false });
+                return Unauthorized(new { success = false });
             }
 
             ApplicationUser user = authHeaderCheck.user;
@@ -66,7 +67,7 @@ namespace SefCloud.Backend.Controllers
 
             if (authHeaderCheck.IsValid == false)
             {
-                return BadRequest(new { success = false });
+                return Unauthorized(new { success = false });
             }
 
             ApplicationUser user = authHeaderCheck.user;
@@ -93,7 +94,7 @@ namespace SefCloud.Backend.Controllers
 
             if (authHeaderCheck.IsValid == false)
             {
-                return BadRequest(new { success = false });
+                return Unauthorized(new { success = false });
             }
 
             ApplicationUser user = authHeaderCheck.user;
@@ -157,6 +158,62 @@ namespace SefCloud.Backend.Controllers
             }
 
             return Ok(new { success = true });
+        }
+
+
+        [HttpPost("get-container-items")]
+        public async Task<IActionResult> getContainerItems(GetContainerItemsRequest getContainerItemsRequest)
+        {
+            var authHeaderCheck = _authService.ValidateAuthorizationHeader(getContainerItemsRequest.Authorization);
+
+            if (authHeaderCheck.IsValid == false)
+            {
+                return Unauthorized(new { success = false });
+            }
+
+            ApplicationUser user = authHeaderCheck.user;
+
+            var storageContainer = await _context.StorageContainers
+                .Where(container => container.Id == getContainerItemsRequest.StorageContainerId)
+                .Select(container => new
+                {
+                    UserId = container.UserId,
+                    EncryptionKey = container.EncryptionKey,
+                    Name = container.Name,
+                    CreatedAt = container.CreatedAt,
+                    UpdatedAt = container.UpdatedAt,
+                })
+                .FirstOrDefaultAsync();
+
+            if(storageContainer == null)
+            {
+                return BadRequest(new { success = false });
+            }
+
+            if(storageContainer.UserId != user.Id)
+            {
+                return Unauthorized(new { success = false });
+            }
+
+            var storageContainerItems = await _context.StorageContainerItems
+                .Where(containerItem => containerItem.ContainerId == getContainerItemsRequest.StorageContainerId)
+                .Select(containerItem => new
+                {
+                    Id = containerItem.Id,
+                    FileName = _encryptionService.DecryptFileName(containerItem.FileName, storageContainer.EncryptionKey),
+                    FileSize = containerItem.FileSize,
+                    createdAt = containerItem.CreatedAt,
+                })
+                .ToListAsync();
+
+            var storageItemToSend = new
+            {
+                Name = storageContainer.Name,
+                CreatedAt = storageContainer.CreatedAt,
+                UpdatedAt = storageContainer.UpdatedAt
+            };
+
+            return Ok(new { success = true, containerItems = storageContainerItems, storageContainer = storageItemToSend});
         }
     }
 }

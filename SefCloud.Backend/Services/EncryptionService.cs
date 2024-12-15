@@ -69,5 +69,13 @@ namespace SefCloud.Backend.Services
                 return Convert.ToBase64String(key);
             }
         }
+
+        public string DecryptFileName(string encryptedFileName, string encryptionKey)
+        {
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(encryptedFileName);
+            string fileExtension = Path.GetExtension(encryptedFileName);
+            string decryptedName = this.Decrypt(fileNameWithoutExtension, encryptionKey);
+            return decryptedName + fileExtension;
+        }
     }
 }
