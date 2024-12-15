@@ -274,8 +274,9 @@ namespace SefCloud.Backend.Controllers
             }
 
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var fileName = _encryptionService.DecryptFileName(storageContainerItem.FileName, storageContainer.EncryptionKey);
 
-            return Ok(new { success = true, file = fileBytes, fileName = _encryptionService.DecryptFileName(storageContainerItem.FileName, storageContainer.EncryptionKey) });
+            return File(fileBytes, "application/octet-stream", fileName);
         }
 
 
